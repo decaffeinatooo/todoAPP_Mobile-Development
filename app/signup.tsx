@@ -9,21 +9,20 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Animated values for opacity and translation
-  const opacity = useRef(new Animated.Value(0)).current;  // Fade-in effect
-  const translateY = useRef(new Animated.Value(50)).current;  // Slide-up effect
 
-  // Trigger the animation on mount
+  const opacity = useRef(new Animated.Value(0)).current; 
+  const translateY = useRef(new Animated.Value(50)).current;  
+  
   useEffect(() => {
     Animated.timing(opacity, {
       toValue: 1,
-      duration: 1000,  // Duration for fade-in
+      duration: 1000,  
       useNativeDriver: true,
     }).start();
 
     Animated.timing(translateY, {
       toValue: 0,
-      duration: 1000,  // Duration for slide-up
+      duration: 1000,  
       useNativeDriver: true,
     }).start();
   }, [opacity, translateY]);
@@ -32,7 +31,7 @@ export default function SignUpScreen() {
     <View style={styles.container}>
       <Image source={require('../assets/images/todoLogo.png')} style={styles.logo} />
       
-      {/* Apply animated view with opacity and translation */}
+     
       <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
         <TextInput
           style={styles.input}
