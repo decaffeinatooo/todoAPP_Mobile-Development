@@ -51,7 +51,7 @@ export default function SignInScreen() {
           onChangeText={setPassword}
         />
         
-        <TouchableOpacity style={styles.signInButton}>
+        <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/main/home")}>
           <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
         
