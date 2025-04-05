@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from "react-native";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -9,51 +9,72 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+
+  const opacity = useRef(new Animated.Value(0)).current; 
+  const translateY = useRef(new Animated.Value(50)).current;  
+  
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 1000,  
+      useNativeDriver: true,
+    }).start();
+
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 1000,  
+      useNativeDriver: true,
+    }).start();
+  }, [opacity, translateY]);
+
   return (
     <View style={styles.container}>
       <Image source={require('../assets/images/todoLogo.png')} style={styles.logo} />
-
-      <TextInput
-        style={styles.input}
-        placeholder="User name"
-        placeholderTextColor="#aaa"
-        value={username}
-        onChangeText={setUsername}
-      />
       
-      <TextInput
-        style={styles.input}
-        placeholder="Email address"
-        placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-      />
+     
+      <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
+        <TextInput
+          style={styles.input}
+          placeholder="User name"
+          placeholderTextColor="#aaa"
+          value={username}
+          onChangeText={setUsername}
+        />
+        
+        <TextInput
+          style={styles.input}
+          placeholder="Email address"
+          placeholderTextColor="#aaa"
+          value={email}
+          onChangeText={setEmail}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#aaa"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#aaa"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        placeholderTextColor="#aaa"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          placeholderTextColor="#aaa"
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
 
-      <TouchableOpacity style={styles.signUpButton}>
-        <Text style={styles.buttonText}>Sign up</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.signUpButton}>
+          <Text style={styles.buttonText}>Sign up</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/signin")}>
-        <Text style={styles.signUpText}>Sign in</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/signin")}>
+          <Text style={styles.signUpText}>Sign in</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -71,6 +92,10 @@ const styles = StyleSheet.create({
     height: 300,
     resizeMode: "contain",
     marginBottom: 20,
+  },
+  inputContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   input: {
     width: "100%",
