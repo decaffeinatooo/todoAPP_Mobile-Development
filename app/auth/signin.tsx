@@ -1,46 +1,61 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Animated,
+} from "react-native";
 
-export default function SignUpScreen() {
+export default function SignInScreen() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(50)).current;
 
-  const opacity = useRef(new Animated.Value(0)).current; 
-  const translateY = useRef(new Animated.Value(50)).current;  
-  
   useEffect(() => {
     Animated.timing(opacity, {
       toValue: 1,
-      duration: 1000,  
+      duration: 1000,
       useNativeDriver: true,
     }).start();
 
     Animated.timing(translateY, {
       toValue: 0,
-      duration: 1000,  
+      duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, [opacity, translateY]);
+  }, []);
+
+  const handleLogin = () => {
+    // ✅ Redirect to the ToDo tab inside the tab group
+    router.replace({ pathname: "/(tabs)/todo" });
+  };
+
+  const handleGoToSignUp = () => {
+    router.push("/auth/signup");
+  };
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/images/todoLogo.png')} style={styles.logo} />
-      
-     
-      <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="User name"
-          placeholderTextColor="#aaa"
-          value={username}
-          onChangeText={setUsername}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/images/todoLogo.png")}
+          style={styles.logo}
         />
-        
+      </View>
+
+      <Animated.View
+        style={[
+          styles.inputContainer,
+          { opacity, transform: [{ translateY }] },
+        ]}
+      >
         <TextInput
           style={styles.input}
           placeholder="Email address"
@@ -58,21 +73,15 @@ export default function SignUpScreen() {
           onChangeText={setPassword}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#aaa"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-
-        <TouchableOpacity style={styles.signUpButton}>
-          <Text style={styles.buttonText}>Sign up</Text>
+        <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Sign in</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/signin")}>
-          <Text style={styles.signUpText}>Sign in</Text>
+        <TouchableOpacity
+          style={styles.signUpButton}
+          onPress={handleGoToSignUp}
+        >
+          <Text style={styles.signUpText}>Sign up</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -87,11 +96,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
+  logoContainer: {
+    marginBottom: 40,
+    borderRadius: 100,
+    padding: 30,
+  },
   logo: {
     width: 300,
     height: 300,
     resizeMode: "contain",
-    marginBottom: 20,
   },
   inputContainer: {
     width: "100%",
@@ -106,7 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: "#fff",
   },
-  signUpButton: {
+  signInButton: {
     width: "100%",
     height: 50,
     backgroundColor: "#d9c5a4",
@@ -120,7 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  signInButton: {
+  signUpButton: {
     width: "100%",
     height: 50,
     borderColor: "#d9c5a4",

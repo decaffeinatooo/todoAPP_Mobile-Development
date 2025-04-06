@@ -5,13 +5,12 @@ import { useEffect } from "react";
 export default function Index() {
   const router = useRouter();
 
- 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push("/signin");
-    }, 2000); 
+      router.push("/auth/signin");
+    }, 2000);
 
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer);
   }, [router]);
 
   return (
