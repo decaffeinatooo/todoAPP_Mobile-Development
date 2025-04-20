@@ -42,7 +42,7 @@ export default function SignInScreen() {
         method: "GET",
       });
       const data = await response.json();
-      if (!response.ok) {
+      if (data.status === 400) {
         setError(data.message || "Sign in failed.");
       } else {
         setSuccess("Sign in successful! Redirecting to home...");
