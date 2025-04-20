@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { View, ActivityIndicator, Text } from "react-native";
+import { TasksProvider } from "../context/TasksContext";
 
 export default function RootLayout() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -15,16 +16,11 @@ export default function RootLayout() {
       // Mock authentication logic
       const userIsLoggedIn = false; // Simulate user being logged in (change to true for testing logged-in state)
       setIsLoggedIn(userIsLoggedIn);
-      setIsLoading(false);
-
-    
-      if (router.isReady) {
-      
-        if (userIsLoggedIn) {
-          router.replace("/main/home");
-        } else {
-          router.replace("/signup"); 
-        }
+      setIsLoading(false)
+      if (userIsLoggedIn) {
+        router.replace("/main/home");
+      } else {
+        router.replace("/signup");
       }
     };
 
@@ -48,8 +44,10 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <TasksProvider>
+      <Stack screenOptions={{ headerShown: false }}>
 
-    </Stack>
+      </Stack>
+    </TasksProvider>
   );
 }
