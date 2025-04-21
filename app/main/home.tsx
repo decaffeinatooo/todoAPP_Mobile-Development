@@ -192,6 +192,7 @@ export default function MainScreen() {
           backgroundColor: "#292929",
           paddingVertical: 12,
           borderTopWidth: 0,
+          paddingBottom: 20,
         }}
       >
         <TabButton
