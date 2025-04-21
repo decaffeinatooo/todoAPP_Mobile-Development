@@ -72,13 +72,13 @@ export default function MainScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, alignItems: "center" }}>
         {activeTab === "ToDo" && (
           <View
             style={{
               width: "100%",
               alignItems: "center",
-              marginTop: 120,
+              marginTop: 60,
             }}
           >
             <Text style={{ color: "#fff", fontSize: 24, marginBottom: 20 }}>
