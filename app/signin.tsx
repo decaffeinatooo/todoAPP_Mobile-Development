@@ -6,7 +6,9 @@ export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const opacity = useRef(new Animated.Value(0)).current; 
   const translateY = useRef(new Animated.Value(50)).current; 
@@ -26,6 +28,33 @@ export default function SignInScreen() {
     }).start();
   }, [opacity, translateY]);
 
+  const handleSignIn = async () => {
+    setError("");
+    setSuccess("");
+    if (!email || !password) {
+      setError("All fields are required.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const url = `https://todo-list.dcism.org/signin_action.php/signin_action.php?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+      const response = await fetch(url, {
+        method: "GET",
+      });
+      const data = await response.json();
+      if (data.status === 400) {
+        setError(data.message || "Sign in failed.");
+      } else {
+        setSuccess("Sign in successful! Redirecting to home...");
+        setTimeout(() => router.push("/main/home"), 1500);
+      }
+    } catch (e) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -36,7 +65,7 @@ export default function SignInScreen() {
       <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
         <TextInput
           style={styles.input}
-          placeholder="Email address"
+          placeholder="Email"
           placeholderTextColor="#aaa"
           value={email}
           onChangeText={setEmail}
@@ -51,10 +80,11 @@ export default function SignInScreen() {
           onChangeText={setPassword}
         />
         
-        <TouchableOpacity style={styles.signInButton} onPress={() => router.push("/main/home")}>
-          <Text style={styles.buttonText}>Sign in</Text>
+        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn} disabled={loading}>
+          <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
         </TouchableOpacity>
-        
+        {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
+        {success ? <Text style={{ color: 'green', marginBottom: 10 }}>{success}</Text> : null}
         <TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/signup")}>
           <Text style={styles.signUpText}>Sign up</Text>
         </TouchableOpacity>
