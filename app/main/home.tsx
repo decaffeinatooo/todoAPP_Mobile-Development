@@ -1,10 +1,11 @@
 import { View, Text, TouchableOpacity, Image, FlatList, Dimensions, TextInput } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "../../context/TasksContext";
 import { Task } from "../../components/types";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get("window");
 
@@ -13,28 +14,74 @@ export default function MainScreen() {
   const [activeTab, setActiveTab] = useState<"ToDo" | "Completed" | "Profile" | "EditTask">("ToDo");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const { tasks, addTask, setTasks } = useTasks();
 
   // Add a new task
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (newTaskText.trim() === "") return;
-    const newTask: Task = {
-      id: Date.now().toString(),
-      text: newTaskText,
-      time: new Date().toLocaleString(),
-      completed: false,
-    };
-    addTask(newTask);
-    setNewTaskText("");
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      alert('User not found. Please sign in again.');
+      return;
+    }
+    try {
+      const response = await fetch('https://todo-list.dcism.org/addItem_action.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_name: newTaskText,
+          item_description: newTaskDescription,
+          user_id: Number(userId),
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 200 && data.data) {
+        // Optionally, add the new task to local state
+        addTask({
+          id: data.data.item_id.toString(),
+          text: data.data.item_name,
+          description: data.data.item_description,
+          time: data.data.timemodified,
+          completed: false,
+        });
+        setNewTaskText("");
+        setNewTaskDescription("");
+      } else {
+        alert(data.message || 'Failed to add task.');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    }
   };
 
   // Mark as complete/incomplete
-  const toggleComplete = (id: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleComplete = async (id: string) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const newStatus = task.completed ? "active" : "inactive";
+    try {
+      const response = await fetch('https://todo-list.dcism.org/statusItem_action.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: Number(id),
+          status: newStatus,
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 200) {
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === id ? { ...t, completed: !t.completed } : t
+          )
+        );
+      } else {
+        alert(data.message || 'Failed to update status.');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    }
   };
 
   // Delete a task
@@ -49,9 +96,11 @@ export default function MainScreen() {
   };
 
   // Update a task (from edit screen)
-  const updateTask = (id: string, newText: string) => {
+  const updateTask = (id: string, newText: string, newDescription: string) => {
     setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, text: newText } : task))
+      prev.map((task) =>
+        task.id === id ? { ...task, text: newText, description: newDescription } : task
+      )
     );
     setActiveTab("ToDo");
   };
@@ -60,75 +109,146 @@ export default function MainScreen() {
   const activeTasks = tasks.filter((t) => !t.completed);
   const completedTasks = tasks.filter((t) => t.completed);
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) return;
+      try {
+        // Fetch active tasks for ToDo
+        const activeRes = await fetch(`https://todo-list.dcism.org/getItems_action.php?status=active&user_id=${userId}`);
+        const activeData = await activeRes.json();
+        let activeTasks: Task[] = [];
+        if (activeData.status === 200 && activeData.data) {
+          activeTasks = Object.values(activeData.data).map((item: any) => ({
+            id: item.item_id.toString(),
+            text: item.item_name,
+            description: item.item_description,
+            time: item.timemodified,
+            completed: false,
+          }));
+        }
+        // Fetch inactive tasks for Completed
+        const completedRes = await fetch(`https://todo-list.dcism.org/getItems_action.php?status=inactive&user_id=${userId}`);
+        const completedData = await completedRes.json();
+        let completedTasks: Task[] = [];
+        if (completedData.status === 200 && completedData.data) {
+          completedTasks = Object.values(completedData.data).map((item: any) => ({
+            id: item.item_id.toString(),
+            text: item.item_name,
+            description: item.item_description,
+            time: item.timemodified,
+            completed: true,
+          }));
+        }
+        setTasks([...activeTasks, ...completedTasks]);
+      } catch (e) {
+        // Optionally handle error
+      }
+    };
+    fetchTasks();
+  }, []);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         {activeTab === "ToDo" && (
           <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
-            <Text style={{ color: "#fff", fontSize: 24, marginBottom: 20 }}>ToDo</Text>
-            <View style={{ flexDirection: "row", width: "90%", marginBottom: 20 }}>
+            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, letterSpacing: 1 }}>ToDo</Text>
+            <View style={{ width: "90%", marginBottom: 16, backgroundColor: "#232323", borderRadius: 10, padding: 16, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 }}>
               <TextInput
                 style={{
-                  flex: 1,
-                  height: 50,
+                  width: "100%",
+                  height: 48,
                   backgroundColor: "#333",
-                  borderRadius: 5,
+                  borderRadius: 8,
                   paddingHorizontal: 15,
                   color: "#fff",
-                  marginRight: 10,
+                  marginBottom: 10,
+                  fontSize: 16,
                 }}
                 placeholder="Add a new task..."
                 placeholderTextColor="#aaa"
                 value={newTaskText}
                 onChangeText={setNewTaskText}
-                onSubmitEditing={handleAddTask}
+                returnKeyType="done"
+              />
+              <TextInput
+                style={{
+                  width: "100%",
+                  height: 48,
+                  backgroundColor: "#333",
+                  borderRadius: 8,
+                  paddingHorizontal: 15,
+                  color: "#fff",
+                  marginBottom: 10,
+                  fontSize: 16,
+                }}
+                placeholder="Description (optional)"
+                placeholderTextColor="#aaa"
+                value={newTaskDescription}
+                onChangeText={setNewTaskDescription}
                 returnKeyType="done"
               />
               <TouchableOpacity
                 style={{
                   backgroundColor: "#d9c5a4",
-                  borderRadius: 5,
+                  borderRadius: 8,
                   justifyContent: "center",
                   alignItems: "center",
-                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  marginTop: 4,
+                  shadowColor: '#d9c5a4',
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 2,
                 }}
                 onPress={handleAddTask}
               >
-                <Ionicons name="add" size={28} color="#000" />
+                <Text style={{ color: "#000", fontSize: 16, fontWeight: "bold", letterSpacing: 0.5 }}>Add Task</Text>
               </TouchableOpacity>
             </View>
             <FlatList
               data={activeTasks}
               keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 40 }}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => onTaskClick(item)}
+                  activeOpacity={0.85}
                   style={{
+                    backgroundColor: "#2E4E6E",
+                    marginBottom: 16,
+                    width: width * 0.9,
+                    borderRadius: 12,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.15,
+                    shadowRadius: 6,
+                    elevation: 2,
+                    padding: 18,
                     flexDirection: "row",
                     alignItems: "center",
-                    backgroundColor: "#2E4E6E",
-                    paddingVertical: 15,
-                    paddingHorizontal: 20,
-                    marginBottom: 10,
-                    width: width * 0.9,
-                    borderRadius: 8,
-                    justifyContent: "space-between",
                   }}
                 >
-                  <TouchableOpacity onPress={() => toggleComplete(item.id)}>
+                  <TouchableOpacity onPress={() => toggleComplete(item.id)} style={{ marginRight: 14 }}>
                     <Ionicons
                       name={item.completed ? "checkbox" : "square-outline"}
-                      size={24}
+                      size={28}
                       color="#fff"
                     />
                   </TouchableOpacity>
-                  <Text style={{ color: "#fff", fontSize: 18, flex: 1, marginLeft: 10 }}>{item.text}</Text>
-                  <TouchableOpacity onPress={() => deleteTask(item.id)}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>{item.text}</Text>
+                    {item.description ? (
+                      <Text style={{ color: "#ccc", fontSize: 15, marginTop: 2 }}>{item.description}</Text>
+                    ) : null}
+                    <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>{item.time}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => deleteTask(item.id)} style={{ marginLeft: 10 }}>
                     <Ionicons name="trash" size={24} color="#fff" />
                   </TouchableOpacity>
                 </TouchableOpacity>
               )}
-              ListEmptyComponent={<Text style={{ color: "#888", fontSize: 18, marginTop: 20 }}>No tasks yet</Text>}
+              ListEmptyComponent={<Text style={{ color: "#888", fontSize: 18, marginTop: 20, textAlign: 'center' }}>No tasks yet</Text>}
             />
           </View>
         )}
@@ -238,7 +358,12 @@ const CompletedScreen = ({ tasks, onDelete, onTaskClick, onToggleComplete }: Com
               <TouchableOpacity onPress={() => onToggleComplete(item.id)}>
                 <Ionicons name={item.completed ? "checkbox" : "square-outline"} size={24} color="#fff" />
               </TouchableOpacity>
-              <Text style={{ color: "#fff", fontSize: 18, flex: 1, marginLeft: 10 }}>{item.text}</Text>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={{ color: "#fff", fontSize: 18, flex: 1, marginLeft: 10 }}>{item.text}</Text>
+                {item.description ? (
+                  <Text style={{ color: "#ccc", fontSize: 14, marginLeft: 10, marginTop: 2 }}>{item.description}</Text>
+                ) : null}
+              </View>
               <TouchableOpacity onPress={() => onDelete(item.id)}>
                 <Ionicons name="trash" size={24} color="#fff" />
               </TouchableOpacity>
@@ -287,8 +412,9 @@ const ProfileScreen = () => {
 };
 
 /************************************Edit Task Screen******************************/
-const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBack: () => void; onUpdate: (id: string, newText: string) => void; onDelete: (id: string) => void }) => {
+const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBack: () => void; onUpdate: (id: string, newText: string, newDescription: string) => void; onDelete: (id: string) => void }) => {
   const [editText, setEditText] = useState(task.text);
+  const [editDescription, setEditDescription] = useState(task.description || "");
   return (
     <View style={{ flex: 1, backgroundColor: "#000", alignItems: "center", paddingTop: 40 }}>
       <View style={{
@@ -322,6 +448,23 @@ const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBa
           maxWidth: 500,
         }}
       />
+      <TextInput
+        value={editDescription}
+        onChangeText={setEditDescription}
+        placeholder="Description"
+        placeholderTextColor="#ccc"
+        style={{
+          backgroundColor: "#d1bfa8",
+          color: "#000",
+          fontSize: width * 0.04,
+          paddingVertical: 10,
+          paddingHorizontal: 15,
+          borderRadius: 8,
+          marginBottom: 20,
+          width: width * 0.9,
+          maxWidth: 500,
+        }}
+      />
       <TouchableOpacity
         style={{
           backgroundColor: "#2E4E6E",
@@ -331,7 +474,7 @@ const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBa
           width: width * 0.9,
           maxWidth: 500,
         }}
-        onPress={() => onUpdate(task.id, editText)}
+        onPress={() => onUpdate(task.id, editText, editDescription)}
       >
         <Text style={{ color: "#fff", textAlign: "center", fontSize: width * 0.05 }}>Update</Text>
       </TouchableOpacity>

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -42,11 +43,13 @@ export default function SignInScreen() {
         method: "GET",
       });
       const data = await response.json();
-      if (data.status === 400) {
-        setError(data.message || "Sign in failed.");
+      console.log('Sign-in API response:', data); // Debugging output
+      // Save user id if present in response
+      if (data.status === 200 && data.data && data.data.id) {
+        await AsyncStorage.setItem('userId', data.data.id.toString());
+        router.replace("/main/home"); // Immediate navigation, no setTimeout
       } else {
-        setSuccess("Sign in successful! Redirecting to home...");
-        setTimeout(() => router.push("/main/home"), 1500);
+        setError(data.message || "Sign in failed.");
       }
     } catch (e) {
       setError("Network error. Please try again.");
