@@ -85,8 +85,20 @@ export default function MainScreen() {
   };
 
   // Delete a task
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+  const deleteTask = async (id: string) => {
+    try {
+      const response = await fetch(`https://todo-list.dcism.org/deleteItem_action.php?item_id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.status === 200) {
+        setTasks((prev) => prev.filter((task) => task.id !== id));
+      } else {
+        alert(data.message || 'Failed to delete task.');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    }
   };
 
   // Edit a task (open edit screen)
