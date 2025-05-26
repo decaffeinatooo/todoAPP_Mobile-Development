@@ -118,13 +118,37 @@ export default function MainScreen() {
   };
 
   // Update a task (from edit screen)
-  const updateTask = (id: string, newText: string, newDescription: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, text: newText, description: newDescription } : task
-      )
-    );
-    setActiveTab("ToDo");
+  const updateTask = async (id: string, newText: string, newDescription: string) => {
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      alert('User not found. Please sign in again.');
+      return;
+    }
+    try {
+      const response = await fetch('https://todo-list.dcism.org/editItem_action.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: Number(userId),
+          item_name: newText,
+          item_description: newDescription,
+          item_id: Number(id),
+        }),
+      });
+      const data = await response.json();
+      if (data.status === 200) {
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === id ? { ...task, text: newText, description: newDescription } : task
+          )
+        );
+        setActiveTab("ToDo");
+      } else {
+        alert(data.message || 'Failed to update task.');
+      }
+    } catch (e) {
+      alert('Network error. Please try again.');
+    }
   };
 
   // Split tasks
