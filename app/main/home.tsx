@@ -1,4 +1,12 @@
-import { View, Text, TouchableOpacity, Image, FlatList, Dimensions, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  Dimensions,
+  TextInput,
+} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useState, useEffect } from "react";
@@ -11,7 +19,9 @@ const { width, height } = Dimensions.get("window");
 
 /************************************Main Screen************************************/
 export default function MainScreen() {
-  const [activeTab, setActiveTab] = useState<"ToDo" | "Completed" | "Profile" | "EditTask">("ToDo");
+  const [activeTab, setActiveTab] = useState<
+    "ToDo" | "Completed" | "Profile" | "EditTask"
+  >("ToDo");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
@@ -162,11 +172,13 @@ export default function MainScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ flex: 1, alignItems: "center" }}>
         {activeTab === "ToDo" && (
+
           <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
             <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, letterSpacing: 1 }}>ToDo</Text>
             <View style={{ width: "90%", marginBottom: 16, backgroundColor: "#232323", borderRadius: 10, padding: 16, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 }}>
+
               <TextInput
                 style={{
                   width: "100%",
@@ -248,6 +260,7 @@ export default function MainScreen() {
                       color="#fff"
                     />
                   </TouchableOpacity>
+
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>{item.text}</Text>
                     {item.description ? (
@@ -256,6 +269,7 @@ export default function MainScreen() {
                     <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>{item.time}</Text>
                   </View>
                   <TouchableOpacity onPress={() => deleteTask(item.id)} style={{ marginLeft: 10 }}>
+
                     <Ionicons name="trash" size={24} color="#fff" />
                   </TouchableOpacity>
                 </TouchableOpacity>
@@ -265,7 +279,12 @@ export default function MainScreen() {
           </View>
         )}
         {activeTab === "Completed" && (
-          <CompletedScreen tasks={completedTasks} onDelete={deleteTask} onTaskClick={onTaskClick} onToggleComplete={toggleComplete} />
+          <CompletedScreen
+            tasks={completedTasks}
+            onDelete={deleteTask}
+            onTaskClick={onTaskClick}
+            onToggleComplete={toggleComplete}
+          />
         )}
         {activeTab === "Profile" && <ProfileScreen />}
         {activeTab === "EditTask" && selectedTask && (
@@ -286,22 +305,41 @@ export default function MainScreen() {
           backgroundColor: "#292929",
           paddingVertical: 12,
           borderTopWidth: 0,
+          paddingBottom: 20,
         }}
       >
         <TabButton
-          icon={<MaterialIcons name="edit" size={24} color={activeTab === "ToDo" ? "#e0c090" : "#999"} />}
+          icon={
+            <MaterialIcons
+              name="edit"
+              size={24}
+              color={activeTab === "ToDo" ? "#e0c090" : "#999"}
+            />
+          }
           label="ToDo"
           active={activeTab === "ToDo"}
           onPress={() => setActiveTab("ToDo")}
         />
         <TabButton
-          icon={<MaterialIcons name="checklist" size={24} color={activeTab === "Completed" ? "#e0c090" : "#999"} />}
+          icon={
+            <MaterialIcons
+              name="checklist"
+              size={24}
+              color={activeTab === "Completed" ? "#e0c090" : "#999"}
+            />
+          }
           label="Completed"
           active={activeTab === "Completed"}
           onPress={() => setActiveTab("Completed")}
         />
         <TabButton
-          icon={<Ionicons name="person" size={24} color={activeTab === "Profile" ? "#e0c090" : "#999"} />}
+          icon={
+            <Ionicons
+              name="person"
+              size={24}
+              color={activeTab === "Profile" ? "#e0c090" : "#999"}
+            />
+          }
           label="Profile"
           active={activeTab === "Profile"}
           onPress={() => setActiveTab("Profile")}
@@ -328,7 +366,9 @@ const TabButton = ({ icon, label, active, onPress }: TabButtonProps) => (
     }}
   >
     {icon}
-    <Text style={{ color: active ? "#e0c090" : "#999", marginTop: 4, fontSize: 14 }}>
+    <Text
+      style={{ color: active ? "#e0c090" : "#999", marginTop: 4, fontSize: 14 }}
+    >
       {label}
     </Text>
   </TouchableOpacity>
@@ -342,12 +382,23 @@ type CompletedScreenProps = {
   onToggleComplete: (id: string) => void;
 };
 
-const CompletedScreen = ({ tasks, onDelete, onTaskClick, onToggleComplete }: CompletedScreenProps) => {
+const CompletedScreen = ({
+  tasks,
+  onDelete,
+  onTaskClick,
+  onToggleComplete,
+}: CompletedScreenProps) => {
   return (
-    <View style={{ flex: 1, alignItems: "center", width: "100%", paddingTop: 40 }}>
-      <Text style={{ color: "#fff", fontSize: 20, marginBottom: 40 }}>Completed</Text>
+    <View
+      style={{ flex: 1, alignItems: "center", width: "100%", marginTop: 60 }}
+    >
+      <Text style={{ color: "#fff", fontSize: 20, marginBottom: 20 }}>
+        Completed
+      </Text>
       {tasks.length === 0 ? (
-        <Text style={{ color: "#888", fontSize: 18, marginTop: 20 }}>No completed tasks yet</Text>
+        <Text style={{ color: "#888", fontSize: 18, marginTop: 20 }}>
+          No completed tasks yet
+        </Text>
       ) : (
         <FlatList
           data={tasks}
@@ -368,14 +419,20 @@ const CompletedScreen = ({ tasks, onDelete, onTaskClick, onToggleComplete }: Com
               }}
             >
               <TouchableOpacity onPress={() => onToggleComplete(item.id)}>
-                <Ionicons name={item.completed ? "checkbox" : "square-outline"} size={24} color="#fff" />
+                <Ionicons
+                  name={item.completed ? "checkbox" : "square-outline"}
+                  size={24}
+                  color="#fff"
+                />
               </TouchableOpacity>
+
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={{ color: "#fff", fontSize: 18, flex: 1, marginLeft: 10 }}>{item.text}</Text>
                 {item.description ? (
                   <Text style={{ color: "#ccc", fontSize: 14, marginLeft: 10, marginTop: 2 }}>{item.description}</Text>
                 ) : null}
               </View>
+
               <TouchableOpacity onPress={() => onDelete(item.id)}>
                 <Ionicons name="trash" size={24} color="#fff" />
               </TouchableOpacity>
@@ -397,14 +454,29 @@ const ProfileScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ position: "absolute", top: 40, left: 0, right: 0, alignItems: "center" }}>
-        <Text style={{ color: "#fff", fontSize: 20 }}>Profile</Text>
+      <View
+        style={{
+          position: "absolute",
+          top: 40,
+          left: 0,
+          right: 0,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 20, marginTop: 20 }}>
+          Profile
+        </Text>
       </View>
 
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Image
           source={require("../../assets/images/todoLogo.png")}
-          style={{ width: 300, height: 300, borderRadius: 60, marginBottom: 20 }}
+          style={{
+            width: 300,
+            height: 300,
+            borderRadius: 60,
+            marginBottom: 20,
+          }}
         />
         <TouchableOpacity
           style={{
@@ -424,22 +496,35 @@ const ProfileScreen = () => {
 };
 
 /************************************Edit Task Screen******************************/
+
 const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBack: () => void; onUpdate: (id: string, newText: string, newDescription: string) => void; onDelete: (id: string) => void }) => {
+
   const [editText, setEditText] = useState(task.text);
   const [editDescription, setEditDescription] = useState(task.description || "");
   return (
-    <View style={{ flex: 1, backgroundColor: "#000", alignItems: "center", paddingTop: 40 }}>
-      <View style={{
-        flexDirection: "row",
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#000",
         alignItems: "center",
-        justifyContent: "space-between",
-        width: "90%",
-        marginBottom: 40,
-      }}>
+        paddingTop: 40,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "90%",
+          marginBottom: 40,
+        }}
+      >
         <TouchableOpacity onPress={onBack}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={{ color: "#fff", fontSize: 20, textAlign: "center", flex: 1 }}>
+        <Text
+          style={{ color: "#fff", fontSize: 20, textAlign: "center", flex: 1 }}
+        >
           Edit
         </Text>
       </View>
@@ -488,7 +573,11 @@ const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBa
         }}
         onPress={() => onUpdate(task.id, editText, editDescription)}
       >
-        <Text style={{ color: "#fff", textAlign: "center", fontSize: width * 0.05 }}>Update</Text>
+        <Text
+          style={{ color: "#fff", textAlign: "center", fontSize: width * 0.05 }}
+        >
+          Update
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={{
@@ -498,11 +587,17 @@ const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBa
           width: width * 0.9,
           maxWidth: 500,
         }}
-        onPress={() => { onDelete(task.id); onBack(); }}
+        onPress={() => {
+          onDelete(task.id);
+          onBack();
+        }}
       >
-        <Text style={{ color: "#fff", textAlign: "center", fontSize: width * 0.05 }}>Delete</Text>
+        <Text
+          style={{ color: "#fff", textAlign: "center", fontSize: width * 0.05 }}
+        >
+          Delete
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
-
