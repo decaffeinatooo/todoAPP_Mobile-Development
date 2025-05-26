@@ -536,14 +536,16 @@ const CompletedScreen = ({
                 alignItems: "center",
                 backgroundColor: "#2E4E2E",
                 paddingVertical: 15,
-                paddingHorizontal: 50,
+                paddingHorizontal: 20,
                 marginBottom: 10,
                 width: width * 0.9,
                 borderRadius: 8,
-                justifyContent: "space-between",
               }}
             >
-              <TouchableOpacity onPress={() => onToggleComplete(item.id)}>
+              <TouchableOpacity
+                onPress={() => onToggleComplete(item.id)}
+                style={{ marginRight: 14 }}
+              >
                 <Ionicons
                   name={item.completed ? "checkbox" : "square-outline"}
                   size={24}
@@ -551,32 +553,23 @@ const CompletedScreen = ({
                 />
               </TouchableOpacity>
 
-              <View style={{ flex: 1, marginLeft: 10 }}>
+              <View style={{ flex: 1 }}>
                 <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 18,
-                    flex: 1,
-                    marginLeft: 10,
-                  }}
+                  style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}
                 >
                   {item.text}
                 </Text>
                 {item.description ? (
-                  <Text
-                    style={{
-                      color: "#ccc",
-                      fontSize: 14,
-                      marginLeft: 10,
-                      marginTop: 2,
-                    }}
-                  >
+                  <Text style={{ color: "#ccc", fontSize: 14, marginTop: 2 }}>
                     {item.description}
                   </Text>
                 ) : null}
               </View>
 
-              <TouchableOpacity onPress={() => onDelete(item.id)}>
+              <TouchableOpacity
+                onPress={() => onDelete(item.id)}
+                style={{ marginLeft: 10 }}
+              >
                 <Ionicons name="trash" size={24} color="#fff" />
               </TouchableOpacity>
             </TouchableOpacity>
