@@ -220,7 +220,13 @@ export default function MainScreen() {
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <View style={{ flex: 1, alignItems: "center" }}>
         {activeTab === "ToDo" && (
-          <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
+          <View
+            style={{
+              width: "100%",
+              alignItems: "center",
+              paddingTop: 40,
+            }}
+          >
             <Text
               style={{
                 color: "#fff",
@@ -308,6 +314,10 @@ export default function MainScreen() {
               </TouchableOpacity>
             </View>
             <FlatList
+              style={{
+                overflowY: "scroll",
+                // backgroundColor: "red",
+              }}
               data={activeTasks}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ paddingBottom: 40 }}
@@ -324,7 +334,7 @@ export default function MainScreen() {
                     shadowOpacity: 0.15,
                     shadowRadius: 6,
                     elevation: 2,
-                    padding: 18,
+                    padding: 16,
                     flexDirection: "row",
                     alignItems: "center",
                   }}
@@ -341,6 +351,7 @@ export default function MainScreen() {
                   </TouchableOpacity>
 
                   <View style={{ flex: 1 }}>
+                    <View></View>
                     <Text
                       style={{
                         color: "#fff",
@@ -357,9 +368,9 @@ export default function MainScreen() {
                         {item.description}
                       </Text>
                     ) : null}
-                    <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
+                    {/* <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
                       {item.time}
-                    </Text>
+                    </Text> */}
                   </View>
                   <TouchableOpacity
                     onPress={() => deleteTask(item.id)}
@@ -675,7 +686,13 @@ const EditTaskScreen = ({
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text
-          style={{ color: "#fff", fontSize: 20, textAlign: "center", flex: 1 }}
+          style={{
+            color: "#fff",
+            fontSize: 20,
+            textAlign: "center",
+            flex: 1,
+            marginTop: 20,
+          }}
         >
           Edit
         </Text>
