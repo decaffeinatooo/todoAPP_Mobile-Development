@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/todoLogo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lividcoffee.todoAPP"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +37,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7ad8306a-08d3-47bf-ad7f-d09bdaf8fa4e"
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { View, ActivityIndicator, Text } from "react-native";
 import { TasksProvider } from "../context/TasksContext";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RootLayout() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -10,6 +11,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      setIsLoading(true);
+      // Check for userId in AsyncStorage
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        setIsLoggedIn(true);
+        setIsLoading(false);
+        router.replace("/main/home");
+        return;
+      }
       // Simulating a delay to mimic an async call (e.g., backend check)
       await new Promise((resolve) => setTimeout(resolve, 2000));
 

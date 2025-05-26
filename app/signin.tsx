@@ -1,6 +1,13 @@
 import { useRouter } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated, BackHandler, KeyboardAvoidingView, Platform } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const unstable_settings = {
+  gestureEnabled: false,
+};
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -42,11 +49,13 @@ export default function SignInScreen() {
         method: "GET",
       });
       const data = await response.json();
-      if (data.status === 400) {
-        setError(data.message || "Sign in failed.");
+      console.log('Sign-in API response:', data); // Debugging output
+      // Save user id if present in response
+      if (data.status === 200 && data.data && data.data.id) {
+        await AsyncStorage.setItem('userId', data.data.id.toString());
+        router.replace("/main/home"); // Immediate navigation, no setTimeout
       } else {
-        setSuccess("Sign in successful! Redirecting to home...");
-        setTimeout(() => router.push("/main/home"), 1500);
+        setError(data.message || "Sign in failed.");
       }
     } catch (e) {
       setError("Network error. Please try again.");
@@ -55,41 +64,58 @@ export default function SignInScreen() {
     }
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        router.replace("/");
+        return true; // Prevent default behavior
+      };
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [router])
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <Image source={require('../assets/images/todoLogo.png')} style={styles.logo} />
-      </View>
-      
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
+      <SafeAreaView style={[styles.container, { flex: 1 }]}>
+        <View style={styles.logoContainer}>
+          <Image source={require('../assets/images/todoLogo.png')} style={styles.logo} />
+        </View>
+        
     
-      <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#aaa"
-          value={email}
-          onChangeText={setEmail}
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#aaa"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        
-        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
-        </TouchableOpacity>
-        {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
-        {success ? <Text style={{ color: 'green', marginBottom: 10 }}>{success}</Text> : null}
-        <TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/signup")}>
-          <Text style={styles.signUpText}>Sign up</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+        <Animated.View style={[styles.inputContainer, { opacity, transform: [{ translateY }] }]}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#aaa"
+            value={email}
+            onChangeText={setEmail}
+          />
+          
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          
+          <TouchableOpacity style={styles.signInButton} onPress={handleSignIn} disabled={loading}>
+            <Text style={styles.buttonText}>{loading ? 'Signing in...' : 'Sign in'}</Text>
+          </TouchableOpacity>
+          {error ? <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text> : null}
+          {success ? <Text style={{ color: 'green', marginBottom: 10 }}>{success}</Text> : null}
+          <TouchableOpacity style={styles.signUpButton} onPress={() => router.push("/signup")}>
+            <Text style={styles.signUpText}>Sign up</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -146,6 +172,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
+    marginBottom: 0, // Remove any extra margin
+    backgroundColor: 'transparent', // Ensure background is transparent
   },
   signUpText: {
     color: '#d9c5a4',
