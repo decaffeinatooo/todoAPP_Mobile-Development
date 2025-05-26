@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "../../context/TasksContext";
 import { Task } from "../../components/types";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
@@ -30,21 +30,24 @@ export default function MainScreen() {
   // Add a new task
   const handleAddTask = async () => {
     if (newTaskText.trim() === "") return;
-    const userId = await AsyncStorage.getItem('userId');
+    const userId = await AsyncStorage.getItem("userId");
     if (!userId) {
-      alert('User not found. Please sign in again.');
+      alert("User not found. Please sign in again.");
       return;
     }
     try {
-      const response = await fetch('https://todo-list.dcism.org/addItem_action.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          item_name: newTaskText,
-          item_description: newTaskDescription,
-          user_id: Number(userId),
-        }),
-      });
+      const response = await fetch(
+        "https://todo-list.dcism.org/addItem_action.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item_name: newTaskText,
+            item_description: newTaskDescription,
+            user_id: Number(userId),
+          }),
+        }
+      );
       const data = await response.json();
       if (data.status === 200 && data.data) {
         // Optionally, add the new task to local state
@@ -58,10 +61,10 @@ export default function MainScreen() {
         setNewTaskText("");
         setNewTaskDescription("");
       } else {
-        alert(data.message || 'Failed to add task.');
+        alert(data.message || "Failed to add task.");
       }
     } catch (e) {
-      alert('Network error. Please try again.');
+      alert("Network error. Please try again.");
     }
   };
 
@@ -71,43 +74,47 @@ export default function MainScreen() {
     if (!task) return;
     const newStatus = task.completed ? "active" : "inactive";
     try {
-      const response = await fetch('https://todo-list.dcism.org/statusItem_action.php', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          item_id: Number(id),
-          status: newStatus,
-        }),
-      });
+      const response = await fetch(
+        "https://todo-list.dcism.org/statusItem_action.php",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            item_id: Number(id),
+            status: newStatus,
+          }),
+        }
+      );
       const data = await response.json();
       if (data.status === 200) {
         setTasks((prev) =>
-          prev.map((t) =>
-            t.id === id ? { ...t, completed: !t.completed } : t
-          )
+          prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
         );
       } else {
-        alert(data.message || 'Failed to update status.');
+        alert(data.message || "Failed to update status.");
       }
     } catch (e) {
-      alert('Network error. Please try again.');
+      alert("Network error. Please try again.");
     }
   };
 
   // Delete a task
   const deleteTask = async (id: string) => {
     try {
-      const response = await fetch(`https://todo-list.dcism.org/deleteItem_action.php?item_id=${id}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `https://todo-list.dcism.org/deleteItem_action.php?item_id=${id}`,
+        {
+          method: "DELETE",
+        }
+      );
       const data = await response.json();
       if (data.status === 200) {
         setTasks((prev) => prev.filter((task) => task.id !== id));
       } else {
-        alert(data.message || 'Failed to delete task.');
+        alert(data.message || "Failed to delete task.");
       }
     } catch (e) {
-      alert('Network error. Please try again.');
+      alert("Network error. Please try again.");
     }
   };
 
@@ -118,36 +125,45 @@ export default function MainScreen() {
   };
 
   // Update a task (from edit screen)
-  const updateTask = async (id: string, newText: string, newDescription: string) => {
-    const userId = await AsyncStorage.getItem('userId');
+  const updateTask = async (
+    id: string,
+    newText: string,
+    newDescription: string
+  ) => {
+    const userId = await AsyncStorage.getItem("userId");
     if (!userId) {
-      alert('User not found. Please sign in again.');
+      alert("User not found. Please sign in again.");
       return;
     }
     try {
-      const response = await fetch('https://todo-list.dcism.org/editItem_action.php', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: Number(userId),
-          item_name: newText,
-          item_description: newDescription,
-          item_id: Number(id),
-        }),
-      });
+      const response = await fetch(
+        "https://todo-list.dcism.org/editItem_action.php",
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: Number(userId),
+            item_name: newText,
+            item_description: newDescription,
+            item_id: Number(id),
+          }),
+        }
+      );
       const data = await response.json();
       if (data.status === 200) {
         setTasks((prev) =>
           prev.map((task) =>
-            task.id === id ? { ...task, text: newText, description: newDescription } : task
+            task.id === id
+              ? { ...task, text: newText, description: newDescription }
+              : task
           )
         );
         setActiveTab("ToDo");
       } else {
-        alert(data.message || 'Failed to update task.');
+        alert(data.message || "Failed to update task.");
       }
     } catch (e) {
-      alert('Network error. Please try again.');
+      alert("Network error. Please try again.");
     }
   };
 
@@ -157,11 +173,13 @@ export default function MainScreen() {
 
   useEffect(() => {
     const fetchTasks = async () => {
-      const userId = await AsyncStorage.getItem('userId');
+      const userId = await AsyncStorage.getItem("userId");
       if (!userId) return;
       try {
         // Fetch active tasks for ToDo
-        const activeRes = await fetch(`https://todo-list.dcism.org/getItems_action.php?status=active&user_id=${userId}`);
+        const activeRes = await fetch(
+          `https://todo-list.dcism.org/getItems_action.php?status=active&user_id=${userId}`
+        );
         const activeData = await activeRes.json();
         let activeTasks: Task[] = [];
         if (activeData.status === 200 && activeData.data) {
@@ -174,17 +192,21 @@ export default function MainScreen() {
           }));
         }
         // Fetch inactive tasks for Completed
-        const completedRes = await fetch(`https://todo-list.dcism.org/getItems_action.php?status=inactive&user_id=${userId}`);
+        const completedRes = await fetch(
+          `https://todo-list.dcism.org/getItems_action.php?status=inactive&user_id=${userId}`
+        );
         const completedData = await completedRes.json();
         let completedTasks: Task[] = [];
         if (completedData.status === 200 && completedData.data) {
-          completedTasks = Object.values(completedData.data).map((item: any) => ({
-            id: item.item_id.toString(),
-            text: item.item_name,
-            description: item.item_description,
-            time: item.timemodified,
-            completed: true,
-          }));
+          completedTasks = Object.values(completedData.data).map(
+            (item: any) => ({
+              id: item.item_id.toString(),
+              text: item.item_name,
+              description: item.item_description,
+              time: item.timemodified,
+              completed: true,
+            })
+          );
         }
         setTasks([...activeTasks, ...completedTasks]);
       } catch (e) {
@@ -198,11 +220,32 @@ export default function MainScreen() {
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       <View style={{ flex: 1, alignItems: "center" }}>
         {activeTab === "ToDo" && (
-
           <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
-            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, letterSpacing: 1 }}>ToDo</Text>
-            <View style={{ width: "90%", marginBottom: 16, backgroundColor: "#232323", borderRadius: 10, padding: 16, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 }}>
-
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 28,
+                fontWeight: "bold",
+                marginTop: 20,
+                marginBottom: 20,
+                letterSpacing: 1,
+              }}
+            >
+              ToDo
+            </Text>
+            <View
+              style={{
+                width: "90%",
+                marginBottom: 16,
+                backgroundColor: "#232323",
+                borderRadius: 10,
+                padding: 16,
+                shadowColor: "#000",
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
+            >
               <TextInput
                 style={{
                   width: "100%",
@@ -245,14 +288,23 @@ export default function MainScreen() {
                   alignItems: "center",
                   paddingVertical: 14,
                   marginTop: 4,
-                  shadowColor: '#d9c5a4',
+                  shadowColor: "#d9c5a4",
                   shadowOpacity: 0.3,
                   shadowRadius: 4,
                   elevation: 2,
                 }}
                 onPress={handleAddTask}
               >
-                <Text style={{ color: "#000", fontSize: 16, fontWeight: "bold", letterSpacing: 0.5 }}>Add Task</Text>
+                <Text
+                  style={{
+                    color: "#000",
+                    fontSize: 16,
+                    fontWeight: "bold",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Add Task
+                </Text>
               </TouchableOpacity>
             </View>
             <FlatList
@@ -268,7 +320,7 @@ export default function MainScreen() {
                     marginBottom: 16,
                     width: width * 0.9,
                     borderRadius: 12,
-                    shadowColor: '#000',
+                    shadowColor: "#000",
                     shadowOpacity: 0.15,
                     shadowRadius: 6,
                     elevation: 2,
@@ -277,7 +329,10 @@ export default function MainScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <TouchableOpacity onPress={() => toggleComplete(item.id)} style={{ marginRight: 14 }}>
+                  <TouchableOpacity
+                    onPress={() => toggleComplete(item.id)}
+                    style={{ marginRight: 14 }}
+                  >
                     <Ionicons
                       name={item.completed ? "checkbox" : "square-outline"}
                       size={28}
@@ -286,19 +341,46 @@ export default function MainScreen() {
                   </TouchableOpacity>
 
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}>{item.text}</Text>
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item.text}
+                    </Text>
                     {item.description ? (
-                      <Text style={{ color: "#ccc", fontSize: 15, marginTop: 2 }}>{item.description}</Text>
+                      <Text
+                        style={{ color: "#ccc", fontSize: 15, marginTop: 2 }}
+                      >
+                        {item.description}
+                      </Text>
                     ) : null}
-                    <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>{item.time}</Text>
+                    <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
+                      {item.time}
+                    </Text>
                   </View>
-                  <TouchableOpacity onPress={() => deleteTask(item.id)} style={{ marginLeft: 10 }}>
-
+                  <TouchableOpacity
+                    onPress={() => deleteTask(item.id)}
+                    style={{ marginLeft: 10 }}
+                  >
                     <Ionicons name="trash" size={24} color="#fff" />
                   </TouchableOpacity>
                 </TouchableOpacity>
               )}
-              ListEmptyComponent={<Text style={{ color: "#888", fontSize: 18, marginTop: 20, textAlign: 'center' }}>No tasks yet</Text>}
+              ListEmptyComponent={
+                <Text
+                  style={{
+                    color: "#888",
+                    fontSize: 18,
+                    marginTop: 20,
+                    textAlign: "center",
+                  }}
+                >
+                  No tasks yet
+                </Text>
+              }
             />
           </View>
         )}
@@ -416,7 +498,15 @@ const CompletedScreen = ({
     <View
       style={{ flex: 1, alignItems: "center", width: "100%", marginTop: 60 }}
     >
-      <Text style={{ color: "#fff", fontSize: 20, marginBottom: 20 }}>
+      <Text
+        style={{
+          color: "#fff",
+          fontSize: 28,
+          fontWeight: "bold",
+          marginBottom: 20,
+          letterSpacing: 1,
+        }}
+      >
         Completed
       </Text>
       {tasks.length === 0 ? (
@@ -451,9 +541,27 @@ const CompletedScreen = ({
               </TouchableOpacity>
 
               <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={{ color: "#fff", fontSize: 18, flex: 1, marginLeft: 10 }}>{item.text}</Text>
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 18,
+                    flex: 1,
+                    marginLeft: 10,
+                  }}
+                >
+                  {item.text}
+                </Text>
                 {item.description ? (
-                  <Text style={{ color: "#ccc", fontSize: 14, marginLeft: 10, marginTop: 2 }}>{item.description}</Text>
+                  <Text
+                    style={{
+                      color: "#ccc",
+                      fontSize: 14,
+                      marginLeft: 10,
+                      marginTop: 2,
+                    }}
+                  >
+                    {item.description}
+                  </Text>
                 ) : null}
               </View>
 
@@ -487,7 +595,16 @@ const ProfileScreen = () => {
           alignItems: "center",
         }}
       >
-        <Text style={{ color: "#fff", fontSize: 20, marginTop: 20 }}>
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 28,
+            fontWeight: "bold",
+            marginTop: 20,
+            marginBottom: 20,
+            letterSpacing: 1,
+          }}
+        >
           Profile
         </Text>
       </View>
@@ -521,10 +638,21 @@ const ProfileScreen = () => {
 
 /************************************Edit Task Screen******************************/
 
-const EditTaskScreen = ({ task, onBack, onUpdate, onDelete }: { task: Task; onBack: () => void; onUpdate: (id: string, newText: string, newDescription: string) => void; onDelete: (id: string) => void }) => {
-
+const EditTaskScreen = ({
+  task,
+  onBack,
+  onUpdate,
+  onDelete,
+}: {
+  task: Task;
+  onBack: () => void;
+  onUpdate: (id: string, newText: string, newDescription: string) => void;
+  onDelete: (id: string) => void;
+}) => {
   const [editText, setEditText] = useState(task.text);
-  const [editDescription, setEditDescription] = useState(task.description || "");
+  const [editDescription, setEditDescription] = useState(
+    task.description || ""
+  );
   return (
     <View
       style={{
