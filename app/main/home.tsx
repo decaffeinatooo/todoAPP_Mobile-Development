@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "../../context/TasksContext";
 import { Task } from "../../components/types";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
@@ -30,21 +30,24 @@ export default function MainScreen() {
   // Add a new task
   const handleAddTask = async () => {
     if (newTaskText.trim() === "") return;
-    const userId = await AsyncStorage.getItem('userId');
+    const userId = await AsyncStorage.getItem("userId");
     if (!userId) {
-      alert('User not found. Please sign in again.');
+      alert("User not found. Please sign in again.");
       return;
     }
     try {
-      const response = await fetch('https://todo-list.dcism.org/addItem_action.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(
+        "https://todo-list.dcism.org/addItem_action.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           item_name: newTaskText,
           item_description: newTaskDescription,
           user_id: Number(userId),
         }),
-      });
+        }
+      );
       const data = await response.json();
       if (data.status === 200 && data.data) {
         // Optionally, add the new task to local state
@@ -58,10 +61,10 @@ export default function MainScreen() {
         setNewTaskText("");
         setNewTaskDescription("");
       } else {
-        alert(data.message || 'Failed to add task.');
+        alert(data.message || "Failed to add task.");
       }
     } catch (e) {
-      alert('Network error. Please try again.');
+      alert("Network error. Please try again.");
     }
   };
 
@@ -231,7 +234,7 @@ export default function MainScreen() {
                   marginBottom: 10,
                   fontSize: 16,
                 }}
-                placeholder="Description (optional)"
+                placeholder="Description"
                 placeholderTextColor="#aaa"
                 value={newTaskDescription}
                 onChangeText={setNewTaskDescription}
