@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useTasks } from "../../context/TasksContext";
 import { Task } from "../../components/types";
+import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
@@ -60,6 +61,7 @@ export default function MainScreen() {
         });
         setNewTaskText("");
         setNewTaskDescription("");
+        Alert.alert("Success", "Task added successfully!");
       } else {
         alert(data.message || "Failed to add task.");
       }
@@ -89,6 +91,10 @@ export default function MainScreen() {
             t.id === id ? { ...t, completed: !t.completed } : t
           )
         );
+         Alert.alert(
+        "Success",
+        task.completed ? "Task marked as not completed." : "Task marked as completed!"
+      );
       } else {
         alert(data.message || 'Failed to update status.');
       }
@@ -106,6 +112,7 @@ export default function MainScreen() {
       const data = await response.json();
       if (data.status === 200) {
         setTasks((prev) => prev.filter((task) => task.id !== id));
+        Alert.alert("Success", "Task deleted successfully!");
       } else {
         alert(data.message || 'Failed to delete task.');
       }
@@ -146,6 +153,7 @@ export default function MainScreen() {
           )
         );
         setActiveTab("ToDo");
+        Alert.alert("Success", "Task updated successfully!");
       } else {
         alert(data.message || 'Failed to update task.');
       }
@@ -202,7 +210,7 @@ export default function MainScreen() {
       <View style={{ flex: 1, alignItems: "center" }}>
         {activeTab === "ToDo" && (
 
-          <View style={{ width: "100%", alignItems: "center", paddingTop: 40 }}>
+          <View style={{ flex: 1, width: "100%", alignItems: "center", paddingTop: 40 }}>
             <Text style={{ color: "#fff", fontSize: 28, fontWeight: "bold", marginBottom: 20, letterSpacing: 1 }}>ToDo</Text>
             <View style={{ width: "90%", marginBottom: 16, backgroundColor: "#232323", borderRadius: 10, padding: 16, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 3 }}>
 
@@ -261,6 +269,7 @@ export default function MainScreen() {
             <FlatList
               data={activeTasks}
               keyExtractor={(item) => item.id}
+              style={{ flex: 1 }}
               contentContainerStyle={{ paddingBottom: 40 }}
               renderItem={({ item }) => (
                 <TouchableOpacity
